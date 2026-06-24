@@ -7,15 +7,14 @@ from sqlalchemy import desc
 import models, schemas
 from database import engine, get_db
 
-# Create tables (In production, use Alembic for migrations)
 models.Base.metadata.create_all(bind=engine)
 
 app = FastAPI(title="Ranking System API")
 
-# Enable CORS for the Next.js frontend
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"], # Change to your Vercel URL in production
+    allow_origins=["*"], 
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -84,13 +83,6 @@ def get_summary(user_id: str, db: Session = Depends(get_db)):
 
 @app.get("/ranking")
 def get_ranking(db: Session = Depends(get_db)):
-    """
-    Fair Ranking Logic:
-    Instead of just highest score, we use a weighted algorithm directly in SQL.
-    Formula: (Total Score * 0.7) + (Transaction Count * 0.3)
-    This prevents users from gaming the system by making a single massive transaction,
-    while still rewarding consistent engagement.
-    """
     # Calculate the rank score natively in Postgres for efficiency
     rank_score_calc = (models.User.total_score * 0.7) + (models.User.transaction_count * 0.3)
     
